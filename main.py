@@ -24,7 +24,8 @@ th_h, th_l, th_s = (10, 100), (0, 60), (85, 255)
 # camera matrix & distortion coefficient
 mtx, dist = calib()
 
-count = 0
+frameCnt = 0  # 프레임을 저장할 변수
+saveCnt = 0 # 세이브횟수를 저장할 변수
 
 if __name__ == '__main__':
 
@@ -64,9 +65,14 @@ if __name__ == '__main__':
         cap = cv2.VideoCapture(input_name) # VideoCapture() 전달인자로 파일명을 넣으면 저장된 비디오를 불러온다.
         # 전달인자로 파일명이 아닌 0,1,..을 입력하면 연결된 디바이스(노트북에 달려있는 카메라 같은것 1개면 0을 입력하면 된다.)에 따라 실시간 촬영 frame을 받아 온다.
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-        while (cap.isOpened()):
-            _, frame = cap.read()
 
+        while (cap.isOpened()):
+            res, frame = cap.read()
+            if res == False: # 영상이 끝났을때 break
+                # 저장된 파일의 목록을 출력해준다.
+                fileList = os.listdir("./output")
+                print("file list : {}".format(fileList))
+                break
             # Correcting for Distortion
             undist_img = undistort(frame, mtx, dist)
             # resize video
@@ -118,7 +124,6 @@ if __name__ == '__main__':
 
 
             # 동영상 저장
-
             try:
                 if not(os.path.isdir("output/")):
                     os.makedirs(os.path.join("output/"))
@@ -126,11 +131,17 @@ if __name__ == '__main__':
                 if e.errno != errno.EEXIST:
                     print("Failed to create directory!")
 
+            frameCnt += 1
 
-            if count % 300 == 0:
-                fileName = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
-                video = cv2.VideoWriter("output/" + str(fileName) + ".mp4", fourcc, 20.0,(frame.shape[1], frame.shape[0]))
-                count = 0
+            if frameCnt % 297 == 1:
+                # 파일저장 번호증가와 프레임개수를 1로 초기화
+                saveCnt += 1
+                frameCnt = 1
+
+                #fileName = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S") # 파일명을 시간으로 정하기
+                info2Video = cv2.VideoWriter("output/info2_" + str(saveCnt) + ".mp4", fourcc, 29.7,(info2.shape[1], info2.shape[0]),True)
+                combinedVideo = cv2.VideoWriter("output/comvined_" + str(saveCnt) + ".mp4", fourcc, 29.7,(combined_result.shape[1], combined_result.shape[0]),False)
+
 
                 # 디스크 파일 시스템 정보
                 st = os.statvfs("/")
@@ -139,12 +150,14 @@ if __name__ == '__main__':
                 used = (st.f_blocks - st.f_bfree) * st.f_frsize
                 free = st.f_bavail * st.f_frsize
                 # GB 단위로 출력
+                print(str(saveCnt) + "번째 저장")
                 print("disk total :" + str(total / 1024 / 1024 / 1024)[0:5] + "GB")
                 print("disk used : " + str(used / 1024 / 1024 / 1024)[0:5] + "GB")
                 print("disk free : " + str(free / 1024 / 1024 / 1024)[0:5] + "GB")
-            video.write(frame)
+            info2Video.write(info2)
+            combinedVideo.write(combined_result)
             # video.release()
-            count += 1
+
 
             # out.write(frame)
             if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -155,7 +168,8 @@ if __name__ == '__main__':
             # if cv2.waitKey(1) & 0xFF == ord('r'):
             #     cv2.imwrite('check1.jpg', undist_img)
             #if cv2.waitKey(1) & 0xFF == ord('q'):
-        video.release()
+        info2Video.release()
+        combinedVideo.release()
         cap.release()
         cv2.destroyAllWindows()
 

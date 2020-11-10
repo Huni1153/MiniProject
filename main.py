@@ -124,6 +124,8 @@ if __name__ == '__main__':
 
 
             # 동영상 저장
+
+            # 디렉토리 생성
             try:
                 if not(os.path.isdir("output/")):
                     os.makedirs(os.path.join("output/"))
@@ -131,16 +133,16 @@ if __name__ == '__main__':
                 if e.errno != errno.EEXIST:
                     print("Failed to create directory!")
 
-            frameCnt += 1
+            frameCnt += 1 # 프레임수 카운트
 
             if frameCnt % 297 == 1:
                 # 파일저장 번호증가와 프레임개수를 1로 초기화
                 saveCnt += 1
                 frameCnt = 1
 
-                #fileName = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S") # 파일명을 시간으로 정하기
-                info2Video = cv2.VideoWriter("output/info2_" + str(saveCnt) + ".mp4", fourcc, 29.7,(info2.shape[1], info2.shape[0]),True)
-                combinedVideo = cv2.VideoWriter("output/comvined_" + str(saveCnt) + ".mp4", fourcc, 29.7,(combined_result.shape[1], combined_result.shape[0]),False)
+                fileName = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S") # 파일명을 시간으로 정하기
+                info2Video = cv2.VideoWriter("output/info2_" + str(fileName) + ".mp4", fourcc, 29.7,(info2.shape[1], info2.shape[0]),True) # info2 결과영상 저장
+                combinedVideo = cv2.VideoWriter("output/comvined_" + str(fileName) + ".mp4", fourcc, 29.7,(combined_result.shape[1], combined_result.shape[0]),False) # 차선인식 영상 저장
 
 
                 # 디스크 파일 시스템 정보
@@ -154,12 +156,12 @@ if __name__ == '__main__':
                 print("disk total :" + str(total / 1024 / 1024 / 1024)[0:5] + "GB")
                 print("disk used : " + str(used / 1024 / 1024 / 1024)[0:5] + "GB")
                 print("disk free : " + str(free / 1024 / 1024 / 1024)[0:5] + "GB")
-            info2Video.write(info2)
-            combinedVideo.write(combined_result)
-            # video.release()
+            info2Video.write(info2) # info2 결과frame을 info2Vidoe객체에 하나씩 추가? 하는건가
+            combinedVideo.write(combined_result) #
 
 
-            # out.write(frame)
+
+            # q를 눌렀을때 종료
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 cv2.waitKey(0)
                 fileList = os.listdir("./output")
@@ -168,6 +170,7 @@ if __name__ == '__main__':
             # if cv2.waitKey(1) & 0xFF == ord('r'):
             #     cv2.imwrite('check1.jpg', undist_img)
             #if cv2.waitKey(1) & 0xFF == ord('q'):
+
         info2Video.release()
         combinedVideo.release()
         cap.release()
